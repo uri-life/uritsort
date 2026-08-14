@@ -53,6 +53,6 @@ library
 application
 ```
 
-The command writes one node per line. The relative order of nodes that are unrelated by dependencies is unspecified.
+The command writes one node per line. Whenever multiple nodes have had all of their dependencies written, `uritsort` writes the lexicographically smallest node first using Swift's locale-independent `String` ordering. Reordering equivalent input lines or dependency tokens therefore does not change the output.
 
-If the graph contains a dependency cycle, `uritsort` writes an error to standard error and exits with a failure status.
+If the graph contains a dependency cycle, `uritsort` writes an error to standard error and exits with a failure status. Nodes in the reported cycle are listed in ascending order, and unrelated cycles are selected using the same deterministic ordering.

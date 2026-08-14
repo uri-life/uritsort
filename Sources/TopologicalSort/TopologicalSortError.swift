@@ -3,6 +3,6 @@ public enum TopologicalSortError<Node>: Error
 where Node: Hashable & Sendable {
 
     /// The graph contains a cycle among the nodes in the associated strongly
-    /// connected component.
+    /// connected component. Sorting operations list these nodes in ascending order.
     case cycle([Node])
 }
