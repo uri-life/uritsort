@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:uritsort}",
+            "name": "Debug TopologicalSort",
+            "target": "TopologicalSort",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug TopologicalSort"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:uritsort}",
+            "name": "Release TopologicalSort",
+            "target": "TopologicalSort",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release TopologicalSort"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:uritsort}",
+            "name": "Debug uritsort",
+            "target": "uritsort",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug uritsort"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:uritsort}",
+            "name": "Release uritsort",
+            "target": "uritsort",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release uritsort"
+        }
+    ]
+}
