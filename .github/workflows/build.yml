@@ -19,8 +19,12 @@ jobs:
         include:
           - os: macos-15
             platform: macos
+            artifact: uritsort-macos
+            build_arguments: ""
           - os: ubuntu-24.04
             platform: linux
+            artifact: uritsort-linux-static
+            build_arguments: --static-swift-stdlib
 
     steps:
       - name: Check out repository
@@ -32,20 +36,20 @@ jobs:
           swift-version: "6.2"
 
       - name: Build release executable
-        run: swift build -c release
+        run: swift build -c release ${{ matrix.build_arguments }}
 
       - name: Package executable
         shell: bash
         run: |
-          binary_directory="$(swift build -c release --show-bin-path)"
+          binary_directory="$(swift build -c release ${{ matrix.build_arguments }} --show-bin-path)"
           test -x "${binary_directory}/uritsort"
           mkdir -p artifacts
-          tar -czf "artifacts/uritsort-${{ matrix.platform }}.tar.gz" \
+          tar -czf "artifacts/${{ matrix.artifact }}.tar.gz" \
             -C "${binary_directory}" uritsort
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          path: artifacts/uritsort-${{ matrix.platform }}.tar.gz
+          path: artifacts/${{ matrix.artifact }}.tar.gz
           if-no-files-found: error
           archive: false
