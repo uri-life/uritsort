@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Release build for ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            platform: macos
+          - os: ubuntu-24.04
+            platform: linux
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v2.4.0
+        with:
+          swift-version: "6.2"
+
+      - name: Build release executable
+        run: swift build -c release
+
+      - name: Package executable
+        shell: bash
+        run: |
+          binary_directory="$(swift build -c release --show-bin-path)"
+          test -x "${binary_directory}/uritsort"
+          mkdir -p artifacts
+          tar -czf "artifacts/uritsort-${{ matrix.platform }}.tar.gz" \
+            -C "${binary_directory}" uritsort
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: artifacts/uritsort-${{ matrix.platform }}.tar.gz
+          if-no-files-found: error
+          archive: false
