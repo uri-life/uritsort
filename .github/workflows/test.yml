@@ -9,24 +9,34 @@ permissions:
 
 jobs:
   test:
-    name: Swift 6.2 on ${{ matrix.os }}
+    name: Swift 6.2.4 on ${{ matrix.platform }} ${{ matrix.architecture }}
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - macos-15
-          - ubuntu-24.04
+        include:
+          - os: macos-15-intel
+            platform: macos
+            architecture: x86_64
+          - os: macos-15
+            platform: macos
+            architecture: arm64
+          - os: ubuntu-24.04
+            platform: linux
+            architecture: x86_64
+          - os: ubuntu-24.04-arm
+            platform: linux
+            architecture: arm64
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
 
       - name: Set up Swift
-        uses: swift-actions/setup-swift@v2.4.0
+        uses: swift-actions/setup-swift@v3.0.0-beta.1
         with:
-          swift-version: "6.2"
+          swift-version: "6.2.4"
 
       - name: Show Swift version
         run: swift --version

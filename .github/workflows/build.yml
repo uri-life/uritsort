@@ -10,20 +10,36 @@ permissions:
 
 jobs:
   build:
-    name: Release build for ${{ matrix.platform }}
+    name: Release build for ${{ matrix.platform }} ${{ matrix.architecture }}
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
         include:
+          - os: macos-15-intel
+            platform: macos
+            architecture: x86_64
+            file_architecture: x86_64
+            artifact: uritsort-macos-x86_64
+            build_arguments: ""
           - os: macos-15
             platform: macos
-            artifact: uritsort-macos
+            architecture: arm64
+            file_architecture: arm64
+            artifact: uritsort-macos-arm64
             build_arguments: ""
           - os: ubuntu-24.04
             platform: linux
-            artifact: uritsort-linux-static
+            architecture: x86_64
+            file_architecture: x86-64
+            artifact: uritsort-linux-x86_64-static
+            build_arguments: --static-swift-stdlib
+          - os: ubuntu-24.04-arm
+            platform: linux
+            architecture: arm64
+            file_architecture: aarch64
+            artifact: uritsort-linux-arm64-static
             build_arguments: --static-swift-stdlib
 
     steps:
@@ -31,9 +47,12 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Swift
-        uses: swift-actions/setup-swift@v2.4.0
+        uses: swift-actions/setup-swift@v3.0.0-beta.1
         with:
-          swift-version: "6.2"
+          swift-version: "6.2.4"
+
+      - name: Show Swift version
+        run: swift --version
 
       - name: Build release executable
         run: swift build -c release ${{ matrix.build_arguments }}
@@ -42,7 +61,12 @@ jobs:
         shell: bash
         run: |
           binary_directory="$(swift build -c release ${{ matrix.build_arguments }} --show-bin-path)"
-          test -x "${binary_directory}/uritsort"
+          binary_path="${binary_directory}/uritsort"
+          test -x "${binary_path}"
+          "${binary_path}" --help >/dev/null
+          file_output="$(file "${binary_path}")"
+          echo "${file_output}"
+          printf '%s\n' "${file_output}" | grep -Fq "${{ matrix.file_architecture }}"
           mkdir -p artifacts
           tar -czf "artifacts/${{ matrix.artifact }}.tar.gz" \
             -C "${binary_directory}" uritsort
