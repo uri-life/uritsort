@@ -46,21 +46,66 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Set up Swift
-        uses: swift-actions/setup-swift@v3.0.0-beta.1
-        with:
-          swift-version: "6.2.4"
+      - name: Set up Swiftly and Swift 6.2.4
+        shell: bash
+        run: |
+          case "${RUNNER_OS}" in
+            Linux)
+              curl -fsSL \
+                "https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz" \
+                -o "${RUNNER_TEMP}/swiftly.tar.gz"
+              tar -xzf "${RUNNER_TEMP}/swiftly.tar.gz" -C "${RUNNER_TEMP}"
+              swiftly_executable="${RUNNER_TEMP}/swiftly"
+              swiftly_environment="${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/env.sh"
+              ;;
+            macOS)
+              curl -fsSL \
+                "https://download.swift.org/swiftly/darwin/swiftly.pkg" \
+                -o "${RUNNER_TEMP}/swiftly.pkg"
+              installer \
+                -pkg "${RUNNER_TEMP}/swiftly.pkg" \
+                -target CurrentUserHomeDirectory
+              swiftly_executable="${HOME}/.swiftly/bin/swiftly"
+              swiftly_environment="${SWIFTLY_HOME_DIR:-$HOME/.swiftly}/env.sh"
+              ;;
+            *)
+              echo "Unsupported runner OS: ${RUNNER_OS}" >&2
+              exit 1
+              ;;
+          esac
+
+          "${swiftly_executable}" init \
+            --assume-yes \
+            --no-modify-profile \
+            --skip-install \
+            --quiet-shell-followup
+          # shellcheck source=/dev/null
+          source "${swiftly_environment}"
+
+          post_install_file="${RUNNER_TEMP}/swiftly-post-install.sh"
+          swiftly install 6.2.4 \
+            --assume-yes \
+            --post-install-file="${post_install_file}"
+          if test -s "${post_install_file}"; then
+            if test "${RUNNER_OS}" = Linux; then
+              sudo bash "${post_install_file}"
+            else
+              bash "${post_install_file}"
+            fi
+          fi
+
+          dirname "$(command -v swiftly)" >> "${GITHUB_PATH}"
 
       - name: Show Swift version
-        run: swift --version
+        run: swiftly run swift --version +6.2.4
 
       - name: Build release executable
-        run: swift build -c release ${{ matrix.build_arguments }}
+        run: swiftly run swift build -c release ${{ matrix.build_arguments }} +6.2.4
 
       - name: Package executable
         shell: bash
         run: |
-          binary_directory="$(swift build -c release ${{ matrix.build_arguments }} --show-bin-path)"
+          binary_directory="$(swiftly run swift build -c release ${{ matrix.build_arguments }} --show-bin-path +6.2.4)"
           binary_path="${binary_directory}/uritsort"
           test -x "${binary_path}"
           "${binary_path}" --help >/dev/null
