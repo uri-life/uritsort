@@ -1,50 +1,25 @@
 # uritsort
 
-`uritsort` topologically sorts nodes by their dependencies. It reads a dependency graph from a text file and writes one node per line, with every dependency before its dependents.
+`uritsort` writes a dependency graph in deterministic topological order, with every dependency before its dependents. Its goal is repeatable output for equivalent graphs, not the fastest possible sorting algorithm.
 
-## Requirements
+## Quick start
 
-- macOS 13 or later
-- Swift 6.2
+Requires macOS 13 or later and Swift 6.2.
 
-## Build
-
-Build the release executable with Swift Package Manager:
+Build the release executable:
 
 ```console
 $ swift build -c release
 ```
 
-The executable is written to `.build/release/uritsort`.
-
-## Usage
-
-```console
-$ .build/release/uritsort <file>
-```
-
-`<file>` is the path to a UTF-8 text file containing the nodes and their dependencies.
-
-### Input format
-
-Each nonempty line starts with a node, followed by zero or more nodes it depends on. Separate every token with spaces:
-
-```text
-node dependency ...
-```
-
-Empty lines and lines containing only spaces are ignored. A dependency does not need its own line; `uritsort` includes referenced dependencies as nodes with no dependencies of their own.
-
-### Example
-
-Given `dependencies.txt`:
+Create `dependencies.txt`:
 
 ```text
 application library
 library runtime
 ```
 
-Run:
+Run `uritsort`:
 
 ```console
 $ .build/release/uritsort dependencies.txt
@@ -53,6 +28,14 @@ library
 application
 ```
 
-The command writes one node per line. Whenever multiple nodes have had all of their dependencies written, `uritsort` writes the lexicographically smallest node first using Swift's locale-independent `String` ordering. Reordering equivalent input lines or dependency tokens therefore does not change the output.
+## Ordering
 
-If the graph contains a dependency cycle, `uritsort` writes an error to standard error and exits with a failure status. Nodes in the reported cycle are listed in ascending order, and unrelated cycles are selected using the same deterministic ordering.
+Each nonempty input line starts with a node, followed by zero or more nodes it depends on, separated by spaces. A dependency is included even if it does not have its own line.
+
+Every dependency is written before its dependents. Whenever multiple nodes are available because all of their dependencies have already been written, `uritsort` writes the lexicographically smallest one next using Swift's locale-independent `String` ordering. Equivalent graphs therefore produce identical output even when their input lines or dependency tokens are reordered.
+
+If the graph contains a dependency cycle, `uritsort` writes an error to standard error and exits with a failure status.
+
+## Complexity
+
+Sorting takes **O(E + V log V)** time, where **V** is the total number of nodes, including nodes that appear only as dependencies, and **E** is the number of dependency references.
