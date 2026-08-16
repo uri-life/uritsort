@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+env:
+  VG_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+  VG_COMMIT: ${{ github.sha }}
+
 jobs:
   build:
     name: Release build for ${{ matrix.platform }} ${{ matrix.architecture }}

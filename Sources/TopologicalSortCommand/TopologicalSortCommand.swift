@@ -35,6 +35,7 @@ struct TopologicalSortCommand: ParsableCommand {
                 """
                 Each nonempty line in the input file must begin with a node, followed by zero or more nodes it depends on, separated by spaces. The command writes one node per line, with every dependency before its dependents.
                 """,
+            version: Versions.semver,
         )
     }
 

@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+env:
+  VG_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+  VG_COMMIT: ${{ github.sha }}
+
 jobs:
   test:
     name: Swift 6.2.4 on ${{ matrix.platform }} ${{ matrix.architecture }}

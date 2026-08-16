@@ -52,6 +52,10 @@ let package: Package = .init(
             name: "uritsort",
             targets: ["TopologicalSortCommand"],
         ),
+        .library(
+            name: "TopologicalSort",
+            targets: ["TopologicalSort"],
+        ),
     ],
     dependencies: [
         .package(
@@ -60,6 +64,7 @@ let package: Package = .init(
         ),
     ],
     targets: [
+        // TopologicalSortCommand
         .executableTarget(
             name: "TopologicalSortCommand",
             dependencies: [
@@ -70,20 +75,27 @@ let package: Package = .init(
                 ),
             ],
             swiftSettings: swiftSettings(),
-        ),
-        .target(
-            name: "TopologicalSort",
-            swiftSettings: swiftSettings(defaultIsolation: nil),
+            plugins: ["VersionsGeneratorPlugin"],
         ),
         .testTarget(
             name: "TopologicalSortCommandTests",
             dependencies: ["TopologicalSortCommand"],
             swiftSettings: swiftSettings(),
         ),
+        // TopologicalSort
+        .target(
+            name: "TopologicalSort",
+            swiftSettings: swiftSettings(defaultIsolation: nil),
+        ),
         .testTarget(
             name: "TopologicalSortTests",
             dependencies: ["TopologicalSort"],
             swiftSettings: swiftSettings(defaultIsolation: nil),
+        ),
+        // VersionsGeneratorPlugin
+        .plugin(
+            name: "VersionsGeneratorPlugin",
+            capability: .buildTool(),
         ),
     ],
 )
